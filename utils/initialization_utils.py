@@ -118,11 +118,15 @@ def find_and_initialize(
                     if replacement_module_random_init:
                         kaiming_uniform_init(replacement_encoder_weight)
                         kaiming_uniform_init(replacement_decoder_weight)
-                    replace_module_weights(target.lora_B.default, replacement_decoder_weight.T)
+                    replace_module_weights(
+                        target.lora_B.default, replacement_decoder_weight.T.contiguous()
+                    )
                     if r_squared:
                         target.forward = types.MethodType(forward_latent, target)
                         target.get_delta_weight = types.MethodType(get_delta_weight, target)
-                        replace_module_weights(target.lora_A.default, replacement_encoder_weight.T)
+                        replace_module_weights(
+                            target.lora_A.default, replacement_encoder_weight.T.contiguous()
+                        )
                         target.default_lora_latent_mapping = torch.nn.Linear(
                             lora_config.r, lora_config.r, bias=False
                         )
