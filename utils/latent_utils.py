@@ -1,4 +1,3 @@
-import warnings
 import torch
 import torch.nn.functional as F
 
@@ -32,10 +31,12 @@ def get_delta_weight(self, adapter) -> torch.Tensor:
         weight_A = weight_A.float()
         weight_B = weight_B.float()
 
-    output_tensor = transpose(
-        weight_B @ self.default_lora_latent_mapping.weight @ weight_A,
-        self.fan_in_fan_out
-    ) * self.scaling[adapter]
+    output_tensor = (
+        transpose(
+            weight_B @ self.default_lora_latent_mapping.weight @ weight_A, self.fan_in_fan_out
+        )
+        * self.scaling[adapter]
+    )
 
     if cast_to_fp32:
         output_tensor = output_tensor.to(dtype=dtype)
@@ -65,7 +66,9 @@ def forward_latent(self, x: torch.Tensor):
         result += (
             self.lora_B[self.active_adapter[0]](
                 self.default_lora_latent_mapping(
-                    self.lora_A[self.active_adapter[0]](self.lora_dropout[self.active_adapter[0]](x))
+                    self.lora_A[self.active_adapter[0]](
+                        self.lora_dropout[self.active_adapter[0]](x)
+                    )
                 )
             )
             * self.scaling[self.active_adapter[0]]
@@ -76,4 +79,3 @@ def forward_latent(self, x: torch.Tensor):
     result = result.to(previous_dtype)
 
     return result
-
